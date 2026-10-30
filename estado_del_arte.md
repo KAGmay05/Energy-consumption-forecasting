@@ -127,12 +127,12 @@ A ello se suma el cambio del patrón de uso con el tiempo documentado en [24], q
 
 | Tipo | Variables | Observaciones |
 |---|---|---|
-| Autorregresivas | Retardos (t−1, t−24, t−168), medias y desviaciones móviles | Suelen ser las más informativas. En un estudio en edificios explicaban cerca del 70 % de la varianza [12] |
+| Autorregresivas | Retardos (t−1, t−24, t−168), medias y desviaciones móviles | Suelen ser las más informativas. En un estudio en edificios explicaban el 69,5 % de la varianza [12b] |
 | Calendario | Hora, día de la semana, mes, festivos, periodos vacacionales, codificación cíclica | Presentes en la práctica totalidad de los trabajos |
 | Temperatura | Temperatura, sus retardos y promedios, grados-día de refrigeración | La variable meteorológica más utilizada. En clima cálido se asocia a la climatización |
-| Humedad | Humedad relativa, punto de rocío, índice de calor | Especialmente relevante en meses cálidos y en climas tropicales [5] |
+| Humedad | Humedad relativa, punto de rocío, índice de calor | Especialmente relevante en meses cálidos y en climas tropicales [5a, 5c] |
 | Radiación y nubosidad | Irradiancia global y cobertura nubosa | Influencia moderada sobre la demanda y determinante sobre la generación |
-| Estacionalidad tropical | Temporada seca o lluviosa, precipitación | En Indonesia, los modelos diferenciados por temporada alcanzaron MAPE inferiores al 2,95 % [5] |
+| Estacionalidad tropical | Temporada seca o lluviosa, precipitación | En Makassar (Indonesia), dos modelos difusos, uno por temporada y a 24 horas, alcanzaron MAPE inferiores al 2,95 % [5b] |
 | Estado del sistema | Indicador de interrupción, estado de carga al inicio del día | Ver sección 3.2. El usuario puede moderar su consumo cuando la batería está baja |
 
 En el ámbito caribeño existe un conjunto de datos público del sistema eléctrico de la República Dominicana (2021–2024). Incluye demanda horaria, temperatura y humedad procedentes de Open-Meteo, retardos y variables de calendario [6].
@@ -153,15 +153,15 @@ En el ámbito caribeño existe un conjunto de datos público del sistema eléctr
 
 *Resultados favorables al boosting:*
 
-- En una red de distribución griega, LightGBM superó a CNN, LSTM, GRU y CNN-LSTM en todas las métricas (MAPE del 1,20 %), con carga, temperatura, humedad y festivos como entradas [12].
-- En edificios, XGBoost superó a LSTM y GRU con unas 17 000 muestras [12].
-- En el sistema de Kazajistán, XGBoost obtuvo un MAPE del 7,15 % frente al 11,73 % de LSTM [12].
+- En una red de distribución griega, LightGBM superó a CNN, LSTM, GRU y CNN-LSTM en todas las métricas (MAPE del 1,20 %), con carga, temperatura, humedad y festivos como entradas [12a].
+- En un edificio de oficinas, XGBoost superó a LSTM, GRU y CNN 1D con unas 17 000 muestras (MAPE del 3,5 %) [12b].
+- En una tesis sobre el sistema de Kazajistán con datos sintéticos, XGBoost obtuvo un MAPE del 7,15 % frente al 11,73 % de LSTM [12c].
 - En la competición M5, casi todos los métodos mejor clasificados emplearon LightGBM con modelos globales, es decir, un único modelo entrenado sobre múltiples series relacionadas [14].
 
 *Resultados favorables al aprendizaje profundo:*
 
 - Un estudio de 2026 con nueve arquitecturas sobre datos de contadores inteligentes concluyó que estas superan de forma consistente a las referencias clásicas. También encontró que las arquitecturas ligeras rinden de forma comparable a las más complejas [15].
-- Con datos irlandeses, una LSTM global superó a SARIMA y a redes *feed-forward* [12].
+- Con datos irlandeses, una LSTM global superó a SARIMA y a redes *feed-forward*, con un error medio al menos un 3 % inferior [12d].
 
 *Resultados para pronóstico cuantílico por hogar:* un estudio de 2024 comparó bosques de regresión cuantílica, redes neuronales cuantílicas, *gradient boosting* cuantílico y LSTM cuantílica. Su enfoque basado en agrupamiento de hogares mejoró la cobertura de los intervalos [22]. Las combinaciones de ambas familias, como la extracción de patrones con redes neuronales seguida de XGBoost o los ensembles, también aparecen con frecuencia [12].
 
@@ -202,7 +202,7 @@ Conviene, por último, tratar con cautela las comparaciones tomadas de tablas pu
 **Otros resultados relevantes:**
 
 - **Chronos-2 [17]** admite covariables pasadas y futuras conocidas, lo que permite incorporar el pronóstico meteorológico. La documentación de AutoGluon incluye precisamente un caso de pronóstico de carga a 24 horas con covariables meteorológicas [18].
-- **En el sistema ERCOT**, Chronos-2 produjo intervalos de predicción bien calibrados, a diferencia de otros modelos del mismo tipo [19].
+- **En el sistema ERCOT**, Chronos-2 produjo intervalos de predicción bien calibrados, a diferencia de otros modelos del mismo tipo: cobertura empírica del 95 % con nivel nominal del 90 %, es decir, ligeramente conservadores [19].
 - **BuildingsBench [20]** muestra que el preentrenamiento con 900 000 edificios simulados se transfiere mejor a edificios comerciales que a residenciales.
 
 ### 3.6 Formulación supervisada y estrategias multipaso
@@ -305,7 +305,7 @@ Las instalaciones nuevas carecen de datos suficientes para entrenar un modelo pr
 
 - **Modelos físicos.** Calculan la potencia a partir de la posición solar, la irradiancia sobre el plano del generador, la temperatura de célula, la potencia nominal y las pérdidas. La biblioteca de referencia es pvlib python [28], que implementa más de cien modelos publicados. No requieren histórico de generación, lo que los hace adecuados cuando solo se conoce la capacidad instalada.
 - **Modelos basados en datos.** Relacionan las variables meteorológicas con la potencia generada. En revisiones recientes, LSTM y CNN figuran entre las arquitecturas de aprendizaje profundo más frecuentes [29, 30].
-- **Modelos híbridos.** Combinan enfoques físicos y basados en datos mediante variables de origen físico, calibración de parámetros o corrección de residuos con aprendizaje automático [31]. En la literatura revisada, los modelos híbridos suelen reportar los mejores resultados, con errores normalizados (NRMSE, MAE) frecuentemente por debajo del 5% (Di Leo et al., 2025).
+- **Modelos híbridos.** Combinan enfoques físicos y basados en datos mediante variables de origen físico, calibración de parámetros o corrección de residuos con aprendizaje automático [31a]; hay también híbridos probabilísticos intra-día [31b]. En la literatura revisada, los modelos híbridos suelen reportar los mejores resultados, con errores normalizados (NRMSE, MAE) frecuentemente por debajo del 5% [85].
 - **Elección según el horizonte.** La literatura clasifica los modelos de generación según el horizonte temporal y la fuente de datos empleada:
 
 | Horizonte | Rango | Uso típico | Fuente de datos principal |
@@ -316,15 +316,15 @@ Las instalaciones nuevas carecen de datos suficientes para entrenar un modelo pr
 | Mediano plazo | 48 h – 1 mes | Gestión de activos, planificación estacional | NWP de mediano plazo, climatología |
 | Largo plazo | > 1 mes | Expansión de capacidad, políticas | Climatología e históricos |
 
-La precisión de los modelos empeora de forma general a medida que el horizonte de predicción crece (Mohamad Radzi et al., 2023). Para estimar autonomías de horas a días, el pronóstico NWP es la fuente operativa más práctica.
+La precisión de los modelos empeora de forma general a medida que el horizonte de predicción crece [86]. Para estimar autonomías de horas a días, el pronóstico NWP es la fuente operativa más práctica.
 
 **Variables de entrada y factores críticos:**
 - Las entradas típicas abarcan variables meteorológicas (irradiancia, temperatura ambiente y de célula, humedad, nubosidad, viento), temporales y de configuración del sistema (inclinación, eficiencia del inversor).
-- **Variables derivadas:** El uso del índice de claridad (irradiancia real frente a la máxima teórica) y de la posición solar (azimut y cenit) mejora de forma notable el rendimiento de los modelos (Di Leo et al., 2025).
-- **Clasificación de clima:** Incorporar una clasificación previa del tipo de clima (despejado, parcialmente nublado, cubierto) es uno de los factores que más incrementa la precisión (Mohamad Radzi et al., 2023). En particular, las condiciones de nubosidad parcial generan fluctuaciones rápidas de potencia y representan un reto notable para algoritmos como las máquinas de vectores de soporte (SVM) (Di Leo et al., 2025).
-- **Optimización:** El rendimiento depende fuertemente de una selección adecuada de variables y de una rigurosa sintonización de hiperparámetros mediante optimización bayesiana, búsqueda en rejilla/aleatoria, algoritmos genéticos o PSO (Di Leo et al., 2025).
+- **Variables derivadas:** El uso del índice de claridad (irradiancia real frente a la máxima teórica) y de la posición solar (azimut y cenit) mejora de forma notable el rendimiento de los modelos [85].
+- **Clasificación de clima:** Incorporar una clasificación previa del tipo de clima (despejado, parcialmente nublado, cubierto) es uno de los factores que más incrementa la precisión [86]. En particular, las condiciones de nubosidad parcial generan fluctuaciones rápidas de potencia y representan un reto notable para algoritmos como las máquinas de vectores de soporte (SVM) [85].
+- **Optimización:** El rendimiento depende fuertemente de una selección adecuada de variables y de una rigurosa sintonización de hiperparámetros mediante optimización bayesiana, búsqueda en rejilla/aleatoria, algoritmos genéticos o PSO [85].
 
-**Generación frente a demanda:** Estudios comparativos a nivel residencial (como el análisis entre Prophet y redes neuronales resumido por Di Leo et al., 2025) muestran que la generación solar puede predecirse con coeficientes de determinación $R^2$ de hasta 0.981, mientras que el pronóstico de consumo en el mismo hogar alcanza valores máximos de $R^2 \approx 0.523$ debido a la alta estocasticidad del comportamiento humano. Esto sugiere que el mayor desafío analítico del proyecto reside en la predicción de la demanda, más que en la generación fotovoltaica.
+**Generación frente a demanda:** Estudios comparativos a nivel residencial (como el análisis entre Prophet y redes neuronales resumido en [85]; la fuente primaria probable es [87]) muestran que la generación solar puede predecirse con coeficientes de determinación $R^2$ de hasta 0.981, mientras que el pronóstico de consumo en el mismo hogar alcanza valores máximos de $R^2 \approx 0.523$ debido a la alta estocasticidad del comportamiento humano. Esto sugiere que el mayor desafío analítico del proyecto reside en la predicción de la demanda, más que en la generación fotovoltaica.
 
 ### 4.2 Requisitos para la integración con el modelo de autonomía
 
@@ -345,11 +345,11 @@ EMHASS [34] es una referencia de integración. Esta herramienta de código abier
 | Fuente | Contenido | Observaciones |
 |---|---|---|
 | Open-Meteo | Histórico (ERA5, desde 1940), pronósticos históricos y pronóstico operativo | La resolución de ERA5 (~25 km) puede no captar efectos costeros locales [54] |
-| NASA POWER | Irradiancia, temperatura y humedad globales | Presenta sesgos en irradiancia. Corregidos por *quantile mapping*, la desviación absoluta media es de 3–7 W/m² [55] |
+| NASA POWER | Irradiancia, temperatura y humedad globales | Presenta sesgos en irradiancia. Con *quantile mapping*, la desviación absoluta media diaria en los sitios estudiados bajó de 4–19 a 3–7 W/m² [55a] |
 | ERA5 (Copernicus) | Reanálisis horario | Base de los datos históricos de Open-Meteo |
 | Estaciones del INSMET | Observaciones locales | Útiles para validar y corregir sesgos |
 
-En comparaciones regionales, NASA POWER y ERA5 se sitúan en torno a un 8–12 % de las mediciones en superficie para radiación mensual, con errores mayores en condiciones de nubosidad [55].
+NASA POWER y ERA5 son estimaciones y no mediciones, por lo que conviene contrastarlas con observaciones locales antes de usarlas. Mutlu [55b] las compara con datos in situ, pero para temperatura, presión y viento, no para radiación. No se ha localizado una fuente verificada del error en radiación.
 
 Para entrenar modelos que vayan a operar con pronósticos, conviene usar como entradas los pronósticos históricos y no las observaciones. Así las condiciones de entrenamiento coinciden con las de operación.
 
@@ -359,7 +359,7 @@ Para entrenar modelos que vayan a operar con pronósticos, conviene usar como en
 
 ### 5.1 Definiciones
 
-- **Autonomía (en días u horas):** tiempo durante el cual la batería puede abastecer la carga sin aporte de generación. La norma AS/NZS 4509.2 la vincula a la profundidad de descarga máxima admisible. En diseño se suelen adoptar entre 2 y 5 días [35].
+- **Autonomía (en días u horas):** tiempo durante el cual la batería puede abastecer la carga sin aporte de generación. La norma AS/NZS 4509.2 la define como los días de operación sin aporte del generador antes de superar la profundidad de descarga máxima de diseño [35c]. En diseño se suelen adoptar entre 2 y 5 días: unos 2 con generador de arranque automático, 2–3 con arranque manual y 4–5 sin generador [35c]. La guía de Penn State liga los días a la disponibilidad exigida: unos 3 para el 95 % y unos 10 para el 99 % con 4–5 horas solares pico [35b].
 - **Probabilidad de pérdida de suministro (LPSP):** fracción de la demanda no cubierta. Mientras la autonomía es un parámetro de diseño determinista, la LPSP es su contrapartida probabilística [36].
 - **Estado de carga (SOC):** energía disponible en relación con la capacidad útil de la batería.
 
@@ -688,7 +688,7 @@ Comparar con una referencia simulada, y no con el estado de carga medido, aísla
 
 ## 10. Contexto nacional
 
-**Marco regulatorio.** El Decreto 110/2024 regula el control y uso eficiente de los portadores energéticos y de las fuentes renovables. Entre otras medidas, exige a los grandes consumidores cubrir con fuentes renovables al menos el 50 % de su consumo en el horario pico diurno [57].
+**Marco regulatorio.** El Decreto 110/2024 regula el control y uso eficiente de los portadores energéticos y de las fuentes renovables. Entre otras medidas, exige que las nuevas inversiones clasificadas como grandes consumidores cubran con fuentes renovables al menos el 50 % de su consumo en el horario pico diurno, con un plazo de tres años según la prensa [57a, 57b]. Se publicó en la Gaceta Oficial el 26 de noviembre de 2024 [57d].
 
 **Situación del sistema eléctrico.** El déficit de generación ha superado los 1 000 MW en algunas jornadas, con interrupciones prolongadas del servicio, y el programa de parques solares acumula retrasos [58]. En este contexto, los sistemas FV con batería se emplean como fuente principal o de respaldo, y estimar su autonomía tiene utilidad práctica directa. Si la instalación está también conectada a la red, el régimen de interrupciones condiciona el uso de la batería y debe tenerse en cuenta en el análisis de los datos.
 
@@ -701,7 +701,7 @@ Comparar con una referencia simulada, y no con el estado de carga medido, aísla
 | Universidad de Cienfuegos y UCLV [61] | Pronóstico FV a corto plazo | — |
 | Montero Laurencio et al., Universidad de Moa y CUJAE [62] | Predicción de consumo y demanda eléctrica | Redes neuronales con aprendizaje iterativo |
 | Universidad de Cienfuegos (2019) [63] | Pronóstico del consumo pico para la gestión energética | — |
-| Estudios de gestión empresarial [57] | Gestión de portadores energéticos e indicadores de desempeño | Métodos de gestión |
+| Estudios de gestión empresarial [57c] | Gestión de portadores energéticos e indicadores de desempeño | Métodos de gestión |
 
 No se identificaron trabajos nacionales que integren el pronóstico de demanda con la generación FV y el almacenamiento para estimar la autonomía.
 
@@ -734,21 +734,28 @@ No se identificaron trabajos nacionales que integren el pronóstico de demanda c
 
 ### Predicción del consumo
 
-5. Influencia de la humedad y del clima tropical en la demanda: [Chen, UNC Charlotte](https://ninercommons.charlotte.edu/record/3265/files/Chen_uncc_0694N_10961.pdf); [modelos estacionales en Makassar, JTEC](https://jtec.utem.edu.my/jtec/article/download/1748/1064/4798); [aprendizaje profundo con datos tropicales, CORE](https://core.ac.uk/works/133006878)
+5. Influencia de la humedad y del clima tropical en la demanda:
+   - 5a. Chen, tesis, UNC Charlotte. [Repositorio](https://ninercommons.charlotte.edu/record/3265/files/Chen_uncc_0694N_10961.pdf)
+   - 5b. Akil, Y. S., Mitani, Y. Seasonal Short-Term Electricity Demand Forecasting under Tropical Condition using Fuzzy Approach Model. *Journal of Telecommunication, Electronic and Computer Engineering (JTEC)*, 9(1-3). [JTEC](https://jtec.utem.edu.my/jtec/article/download/1748/1064/4798)
+   - 5c. Aprendizaje profundo con datos tropicales. [CORE](https://core.ac.uk/works/133006878)
 6. A dataset of exogenous variables and historical electricity demand for short-term load forecasting of the SENI in the Dominican Republic from 2021 to 2024 (2025). [PMC12510032](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12510032/)
 7. Ke, G. et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. *Advances in Neural Information Processing Systems*.
 8. Rubattu, N., Maroni, G., Corani, G. (2023). Electricity Load and Peak Forecasting: Feature Engineering, Probabilistic LightGBM and Temporal Hierarchies. [arXiv:2305.05575](https://arxiv.org/abs/2305.05575). Véase también Hong, T. et al. (2016). Probabilistic energy forecasting: GEFCom2014 and beyond. *International Journal of Forecasting*, 32(3). [IDEAS](https://ideas.repec.org/a/eee/intfor/v32y2016i3p1061-1066.html)
 9. Olivares, K. G., Challu, C., Marcjasz, G., Weron, R., Dubrawski, A. (2023). Neural basis expansion analysis with exogenous variables: Forecasting electricity prices with NBEATSx. *International Journal of Forecasting*. [arXiv:2104.05522](https://arxiv.org/abs/2104.05522)
 10. Das, A. et al. (2023). Long-term Forecasting with TiDE: Time-series Dense Encoder. [arXiv:2304.08424](https://arxiv.org/abs/2304.08424)
 11. Lim, B., Arık, S. Ö., Loeff, N., Pfister, T. (2021). Temporal Fusion Transformers for Interpretable Multi-horizon Time Series Forecasting. *International Journal of Forecasting*, 37(4). [arXiv:1912.09363](https://arxiv.org/abs/1912.09363)
-12. Comparaciones entre *gradient boosting* y aprendizaje profundo: [*Energies* 18(19), 5060 (2025)](https://www.mdpi.com/1996-1073/18/19/5060); [*Battery Energy* (2026)](https://journal.hep.com.cn/bte/EN/10.1002/bte2.70079); [Nazarbayev University (2025)](https://nur.nu.edu.kz/bitstreams/7c9c3f2a-2e6a-4003-a47d-cab1ab9c3aed/download); [LSTM global con contadores inteligentes, engrXiv](https://engrxiv.org/preprint/view/2863)
+12. Comparaciones entre *gradient boosting* y aprendizaje profundo (cada fuente se cita por separado en el texto):
+    - 12a. Shiblee, Koukaras (2025). Short-Term Load Forecasting in the Greek Power Distribution System: A Comparative Study of Gradient Boosting and Deep Learning Models. *Energies*, 18(19), 5060. [MDPI](https://www.mdpi.com/1996-1073/18/19/5060)
+    - 12b. Hayat, S., Nawaz, A., Almani, A. A., Mustafa, E., Javid, Z., Holderbaum, W. (2026). Enhancing Power System Flexibility Using AI-Based Forecasting Techniques: A Comparative Study. *Battery Energy*. [Wiley/HEP](https://journal.hep.com.cn/bte/EN/10.1002/bte2.70079)
+    - 12c. Abdek, M. (2025). AI Based Techniques for Short-Term Load Forecasting. Tesis, Nazarbayev University. [NU Repository](https://nur.nu.edu.kz/handle/123456789/8701)
+    - 12d. Genov, E. et al. Next-day Load Forecasting with Smart Meter Data Using Global Recurrent Neural Networks. [engrXiv](https://engrxiv.org/preprint/view/2863)
 13. Wang, Y., Wu, H. et al. (2024). TimeXer: Empowering Transformers for Time Series Forecasting with Exogenous Variables. *NeurIPS 2024*. [Actas](https://proceedings.neurips.cc/paper_files/paper/2024/hash/0113ef4642264adc2e6924a3cbbdf532-Abstract.html)
 14. Makridakis, S., Spiliotis, E., Assimakopoulos, V. (2022). M5 accuracy competition: Results, findings, and conclusions. *International Journal of Forecasting*, 38(4). [PMC9232271](https://pmc.ncbi.nlm.nih.gov/articles/PMC9232271)
 15. Kavoosighafi, B., Eidenskog, M., Glad, W., Vrotsou, K. (2026). An Empirical Benchmark of Deep Time-Series Models for Smart Meter Energy Forecasting. [arXiv:2608.18675](https://arxiv.org/abs/2608.18675)
 16. Meyer, M., Zapata, D., Kaltenpoth, S., Müller, O. (2025). Benchmarking Time Series Foundation Models for Short-Term Household Electricity Load Forecasting. *IEEE Access*, 13, 218141–218153. [arXiv:2410.09487](https://arxiv.org/abs/2410.09487)
 17. Ansari, A. F. et al. (2025). Chronos-2: From Univariate to Universal Forecasting. [arXiv:2510.15821](https://arxiv.org/abs/2510.15821)
 18. AutoGluon. Forecasting with Chronos-2. [Documentación](https://auto.gluon.ai/1.5/tutorials/timeseries/forecasting-chronos.html)
-19. Time Series Foundation Models for Energy Load Forecasting on Consumer Hardware (2026). [arXiv:2602.10848](https://arxiv.org/abs/2602.10848)
+19. Simeone, L. (2026). Time Series Foundation Models for Energy Load Forecasting on Consumer Hardware: A Multi-Dimensional Zero-Shot Benchmark. [arXiv:2602.10848](https://arxiv.org/abs/2602.10848)
 20. Emami, P., Sahu, A., Graf, P. (2023). BuildingsBench: A Large-Scale Dataset of 900K Buildings and Benchmark for Short-Term Load Forecasting. *NeurIPS 2023 Datasets and Benchmarks*. [arXiv:2307.00142](https://arxiv.org/abs/2307.00142)
 21. Wang, Y. et al. (2019). Probabilistic individual load forecasting using pinball loss guided LSTM. *Applied Energy*. [Imperial College](https://spiral.imperial.ac.uk/entities/publication/6b7e2035-ada8-4110-bd26-d3bda58329d6). Sobre cópulas para la correlación temporal: [DTU](https://orbit.dtu.dk/en/publications/probabilistic-load-forecasting-considering-temporal-correlation-o/)
 22. Pronóstico probabilístico de demanda por hogar mediante agrupamiento y LSTM cuantílica (2024). *IEEE Access*. [DOAJ](https://doaj.org/article/91bb47248ee4433cb2b1688370d169fd)
@@ -765,23 +772,25 @@ No se identificaron trabajos nacionales que integren el pronóstico de demanda c
 
 28. Holmgren, W. F., Hansen, C. W., Mikofski, M. A. (2018). pvlib python: a python package for modeling solar energy systems. *Journal of Open Source Software*, 3(29), 884. https://doi.org/10.21105/joss.00884
 29. Khouili et al. (2025). Evaluating the impact of deep learning approaches on solar and photovoltaic power forecasting: A systematic review. *Energy Strategy Reviews*. [DOAJ](https://doaj.org/article/b2008cf42f6b481d8ecc332f9dce74d9)
-30. Yu et al. (2024). Revisión de arquitecturas de aprendizaje profundo para el pronóstico de potencia FV. *Energies*.
-31. Modelos híbridos físicos y basados en datos para generación FV: [Wageningen University](https://research.wur.nl/en/publications/photovoltaic-power-estimation-and-forecast-models-integrating-phy/); [FH Oberösterreich](https://pure.fh-ooe.at/en/publications/hybrid-model-for-intra-day-probabilistic-pv-power-forecast/)
+30. Yu, J. et al. (2024). Deep Learning Models for PV Power Forecasting: Review. *Energies*, 17(16), 3973. https://doi.org/10.3390/en17163973
+31. Modelos híbridos físicos y basados en datos para generación FV:
+    - 31a. de Oliveira Santos, L., AlSkaif, T., Cordeiro Barroso, G., Marques de Carvalho, P. C. (2024). Photovoltaic power estimation and forecast models integrating physics and machine learning: A review on hybrid techniques. *Solar Energy*, 284, 113044. [Wageningen University](https://research.wur.nl/en/publications/photovoltaic-power-estimation-and-forecast-models-integrating-phy/)
+    - 31b. Thaker, J., Höller, R. (2024). Hybrid model for intra-day probabilistic PV power forecast. *Renewable Energy*, 232. [FH Oberösterreich](https://pure.fh-ooe.at/en/publications/hybrid-model-for-intra-day-probabilistic-pv-power-forecast/)
 32. Visser, L. et al. (2022). Solar Power Forecasts. En *Comprehensive Renewable Energy*, 2.ª ed. [Utrecht University](https://research-portal.uu.nl/en/publications/111-solar-power-forecasts/)
 33. Revisión de aprendizaje profundo multisensor para pronóstico solar (2023). *Applied Energy*. [Fraunhofer](https://publica.fraunhofer.de/handle/publica/451334)
 34. EMHASS: Energy Management for Home Assistant. [Documentación](https://emhass.readthedocs.io/en/latest/forecasts.html)
-34b. Di Leo et al. (2025). Solar and photovoltaic power forecasting: Comprehensive analysis of physical, data-driven, and hybrid models, variable selection, and hyperparameter tuning.
-34c. Mohamad Radzi et al. (2023). Impact of weather classification and forecast horizon on photovoltaic power generation accuracy.
-34d. Raudys, A., Gaidukevičius, A. (2024). Comparative analysis of renewable generation versus household load predictability in residential microgrids.
 
 ### Autonomía, almacenamiento y control
 
-35. Días de autonomía y norma AS/NZS 4509.2: [GSES](https://www.gses.com.au/oversized-pv-array-and-battery-days/); [Penn State, AE 868](https://courses.ems.psu.edu/ae868/node/924)
+35. Días de autonomía y norma AS/NZS 4509.2:
+    - 35a. GSES. Oversized PV array and battery days. [GSES](https://www.gses.com.au/oversized-pv-array-and-battery-days/)
+    - 35b. Penn State, curso AE 868. [Penn State](https://courses.ems.psu.edu/ae868/node/924)
+    - 35c. Standards Australia/Standards New Zealand. AS/NZS 4509.2:2010, *Stand-alone power systems, Part 2: System design*, cláusula 3.4.7.6. Cifras tomadas de fuentes secundarias; contrastar con el texto de la norma. [Catálogo](https://store.standards.org.au/product/as-nzs-4509-2-2010)
 36. Ayop, R., Isa, N. M., Tan, C. W. (2018). Components sizing of photovoltaic stand-alone system based on loss of power supply probability. *Renewable and Sustainable Energy Reviews*, 81(2), 2731–2743. [IDEAS](https://ideas.repec.org/a/eee/rensus/v81y2018ip2p2731-2743.html)
 37. Alnejaili, T., Labdai, S., Chrifi-Alaoui, L. (2021). Predictive Management Algorithm for Controlling PV-Battery Off-Grid Energy System. *Sensors*, 21(19), 6427. https://doi.org/10.3390/s21196427
 38. Guillén-Asensio, A., Sanz-Gorrachategui, I., Bono-Nuez, A., Bernal, C., Sanz-Alcaine, J. M., Pérez-Cebolla, F. J. (2021). Energy Shortage Failure Prediction in Photovoltaic Standalone Installations by Using Machine Learning Techniques. *IEEE Access*, 9. https://doi.org/10.1109/ACCESS.2021.3129930
 39. Machine learning-based prediction model for battery levels in IoT devices using meteorological variables (2024). *Internet of Things*. [Universitat Jaume I](https://repositori.uji.es/xmlui/handle/10234/206153)
-40. Faraji-Niri, M. et al. (2019). Predicción de carga y energía de descarga restante mediante modelos de Markov. [University of Warwick](https://wrap.warwick.ac.uk/id/eprint/130711)
+40. Faraji Niri, M., Marco, J. et al. (2019). Estimación de la energía de descarga restante mediante un modelo de Markov de dos capas para la predicción de la carga. *International Conference on Mechatronics Technology*, Salerno. [University of Warwick](https://wrap.warwick.ac.uk/id/eprint/130711)
 41. Predicción probabilística del fin de vida de baterías de plomo-ácido conectadas a sistemas FV. University of Oxford. [ORA](https://ora.ox.ac.uk/objects/uuid:8ecbff88-f21a-40da-b36b-532966c81673/files/rm900nv044)
 42. Probabilistic Forecasting of Battery Energy Storage State-of-Charge under Primary Frequency Control. [ResearchGate](https://www.researchgate.net/publication/337109677_Probabilistic_Forecasting_of_Battery_Energy_Storage_State-of-Charge_under_Primary_Frequency_Control)
 43. Residential PV-battery scheduling with stochastic optimization and neural network-driven scenario generation (2024). *Energy Reports*. [ScienceDirect](https://www.sciencedirect.com/science/article/pii/S235248472400372X)
@@ -802,18 +811,30 @@ No se identificaron trabajos nacionales que integren el pronóstico de demanda c
 ### Datos
 
 54. Open-Meteo. Historical Weather Data from 1940 until now. [Open-Meteo](https://openmeteo.substack.com/p/historical-weather-data-from-1940)
-55. Evaluaciones de NASA POWER y ERA5: [NASA NTRS](https://ntrs.nasa.gov/citations/20230017320); [Balıkesir University](https://acikerisim.balikesir.edu.tr/items/aaf0c9d6-817f-4629-86be-a899d9141e26)
+55. Evaluaciones de NASA POWER y ERA5:
+    - 55a. Khadka, N., Stackhouse, P., Patadia, F., Mikovitz, J. C., Zhang, T., Macpherson, B. (2023). Creating A Consistent Historical NASA POWER Solar Radiation Dataset to Support Renewable Energy, Building Energy Efficiency and Agro-Climatology Decisions. Póster, AGU Annual Meeting 2023. [NASA NTRS](https://ntrs.nasa.gov/citations/20230017320)
+    - 55b. Mutlu, A. (2025). Comparative evaluation of NASA, ERA5, and observational data for accuracy and reliability. [Balıkesir University](https://acikerisim.balikesir.edu.tr/items/aaf0c9d6-817f-4629-86be-a899d9141e26)
 56. Ausgrid. Solar Home Electricity Data. [Ausgrid](https://ausgrid.com.au/Industry/Our-Research/Data-to-share/Solar-home-electricity-data) · [Data.NSW](https://data.nsw.gov.au/data/en/dataset/solar-home-electricty-data/resource/d2dc76f0-22e3-4efc-bed9-bb4e0e50f0db)
 
 ### Contexto nacional
 
-57. Decreto 110/2024 y gestión de portadores energéticos: [CubaNet](https://www.cubanet.org/regimen-cubano-anticipa-nuevos-apagones-totales-de-mas-de-72-horas/); [Diario de Cuba](https://diariodecuba.com/cuba/1732714161_58552.html); [Dialnet](https://dialnet.unirioja.es/descarga/articulo/6210088.pdf)
+57. Decreto 110/2024 y gestión de portadores energéticos:
+    - 57a. [CubaNet](https://www.cubanet.org/regimen-cubano-anticipa-nuevos-apagones-totales-de-mas-de-72-horas/) (prensa)
+    - 57b. [Diario de Cuba](https://diariodecuba.com/cuba/1732714161_58552.html) (prensa)
+    - 57c. Gestión de portadores energéticos. [Dialnet](https://dialnet.unirioja.es/descarga/articulo/6210088.pdf)
+    - 57d. Decreto No. 110/2024, Regulaciones para el control y uso eficiente de los portadores energéticos. [FAOLEX](https://leap.unep.org/en/countries/cu/national-legislation/decreto-no-1102024-regulaciones-para-el-control-y-uso-eficiente) (el texto oficial de la Gaceta no se consultó; el 50 % y el plazo de tres años proceden de la prensa)
 58. Parques solares y déficit de generación: [OnCubaNews (I)](https://oncubanews.com/cuba/economia/parques-solares-vs-apagones-entre-las-ilusiones-y-la-realidad-i); [OnCubaNews (II)](https://oncubanews.com/cuba/economia/parques-solares-vs-apagones-entre-las-ilusiones-y-la-realidad-iiy-final); [POWER Magazine](https://www.powermag.com/cuba-accelerates-solar-expansion-with-2000-mw-plan-by-2028/)
 59. Evaluation of AI-based short-term energy forecasts for photovoltaic farms. XXI Simposio Internacional de Ingeniería Eléctrica (SIE 2025), UCLV. [Convención UCLV](https://convencion.uclv.cu/event/21st-international-symposium-on-electrical-engineering-sie-2025-273/track/evaluation-of-ai-based-short-term-energy-forecasts-for-photovoltaic-farm-9487)
 60. Predicción de generación fotovoltaica mediante técnicas de inteligencia artificial con deep learning. XIX SIE 2021, UCLV. [Convención UCLV](https://convencion.uclv.cu/es/event/xix-simposio-internacional-de-ingenieria-electrica-sie-2021-58/track/prediccion-de-generacion-fotovoltaica-mediante-tecnicas-de-inteligencia-artificial-con-deep-learning-3691)
 61. Pronóstico de generación fotovoltaica a corto plazo. *Revista Universidad y Sociedad*. [Universidad de Cienfuegos](https://rus.ucf.edu.cu/index.php/rus/article/download/1920/1912/)
 62. Montero Laurencio, R., Torres Breff, E., Marrero Ramírez, S., Jiménez Jiménez, J. Predicción de Consumo y Demanda de Electricidad Mediante Redes Neuronales Artificiales y Algoritmo Iterativo. *Revista Politécnica*. [EPN](https://revistapolitecnica.epn.edu.ec/ojs2/index.php/revista_politecnica2/article/view/2106)
 63. Pronóstico del Consumo Pico para la Gestión Energética de la Universidad de Cienfuegos (2019). *Revista Universidad y Sociedad*, 11(4), 220–228. [Universidad de Cienfuegos](https://rus.ucf.edu.cu/index.php/rus/article/download/1297/1325/)
+
+### Generación fotovoltaica (complemento)
+
+85. Di Leo, P. et al. (2025). Advancements and Challenges in Photovoltaic Power Forecasting: A Comprehensive Review. *Energies*, 18(8), 2108. https://doi.org/10.3390/en18082108
+86. Mohamad Radzi, P. N. L., Akhter, M. N., Mekhilef, S., Mohamed Shah, N. (2023). Review on the Application of Photovoltaic Forecasting Using Machine Learning for Very Short- to Long-Term Forecasting. *Sustainability*, 15(4), 2942. https://doi.org/10.3390/su15042942
+87. Raudys, A., Gaidukevičius, J. (2024). Forecasting Solar Energy Generation and Household Energy Usage for Efficient Utilisation. *Energies*, 17(5), 1256. [IDEAS](https://ideas.repec.org/a/gam/jeners/v17y2024i5p1256-d1352255.html)
 
 ### Metodología de pronóstico a escala de usuario
 

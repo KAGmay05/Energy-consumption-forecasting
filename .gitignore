@@ -1,0 +1,38 @@
+# ── Data ──────────────────────────────────────────────────────────────
+# Raw datasets are large and live in shared storage, not in git.
+data/raw/*
+!data/raw/.gitkeep
+data/weather/*
+!data/weather/.gitkeep
+
+# ── Python ────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# ── Jupyter ───────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# ── OS / editors ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# ── Logs and temp ─────────────────────────────────────────────────────
+*.log
+*.tmp
+.cache/

@@ -1,12 +1,12 @@
 # Estado del arte: predicción del consumo eléctrico y estimación de la autonomía en sistemas fotovoltaicos con almacenamiento
 
-Equipo 3 · Octubre de 2026
+Equipo 3 · Octubre de 2026 · Actualizado en noviembre de 2026
 
 ---
 
 ## Resumen
 
-Este documento revisa las técnicas que se usan actualmente para predecir el consumo eléctrico con aprendizaje automático, y cómo esas predicciones se combinan con la generación fotovoltaica (FV) y el estado de la batería para estimar la autonomía energética de un sistema. La revisión no persigue identificar un vacío de investigación. Su objetivo es reunir los métodos, herramientas y fuentes de datos aplicables al problema con datos locales: un sistema compuesto exclusivamente por paneles solares y baterías, del que se conocen el consumo histórico, la capacidad FV instalada y las condiciones meteorológicas.
+Este documento revisa las técnicas que se usan actualmente para predecir el consumo eléctrico con aprendizaje automático, y cómo esas predicciones se combinan con la generación fotovoltaica (FV) y el estado de la batería para estimar la autonomía energética de un sistema. La revisión no persigue identificar un vacío de investigación. Su objetivo es reunir los métodos, herramientas y fuentes de datos aplicables al problema planteado: un sistema compuesto exclusivamente por paneles solares y baterías, del que se conocen el consumo histórico, la capacidad FV instalada y las condiciones meteorológicas. Según las precisiones recibidas sobre el encargo (sección 1.1), los datos de consumo son por ahora sintéticos y de gran volumen, el equipo debe buscar en fuentes públicas tanto esos datos como los meteorológicos, y el sistema debe poder responder a horizontes de horas, días, semanas y meses.
 
 La literatura revisada coincide en descomponer el problema en dos pronósticos independientes, demanda y generación, y en integrarlos mediante un balance energético de la batería. Para el pronóstico de demanda, los modelos de *gradient boosting* con variables de calendario y clima son una referencia sólida, sobre todo con conjuntos de datos de tamaño moderado. Las arquitecturas neuronales recientes y los modelos fundacionales de series temporales son alternativas competitivas. La autonomía se obtiene, en la mayoría de los trabajos, simulando la evolución del estado de carga a partir de los pronósticos, preferiblemente bajo múltiples escenarios para cuantificar la incertidumbre. Esos escenarios deben ser coherentes entre la demanda y la generación, y los ensembles meteorológicos son la vía más directa para construirlos. Un ejemplo numérico a 72 horas muestra que, hasta el siguiente amanecer, la autonomía depende solo del pronóstico de demanda, mientras que en horizontes de varios días pasa a dominar la incertidumbre de la generación.
 
@@ -50,6 +50,16 @@ flowchart LR
 3. Un modelo del almacenamiento, que integra ambos pronósticos y calcula cuándo el estado de carga alcanza su límite inferior.
 
 Separar la demanda de la generación tiene respaldo empírico. En sistemas con generación detrás del contador, pronosticar ambas componentes por separado y combinarlas ha dado mejores resultados que pronosticar directamente la carga neta [25, 26]. En hogares individuales se ha observado además que incorporar la generación FV a la serie de consumo puede degradar la precisión del pronóstico [27].
+
+### 1.1 Precisiones del encargo
+
+El 2 de noviembre de 2026 se recibieron tres aclaraciones sobre el encargo, que delimitan el problema y condicionan la lectura del resto del documento:
+
+| Aspecto | Aclaración | Consecuencias para la revisión |
+|---|---|---|
+| Datos | Los datos deben buscarse en internet. Los datos de consumo de portadores son por ahora sintéticos, aunque de gran volumen | No hay, de momento, mediciones reales del sistema. El equipo debe localizar por su cuenta tanto los datos de consumo como los meteorológicos, de modo que las fuentes públicas de las secciones 4.3 y 9 pasan a ser la base del proyecto. El volumen deja de ser la limitación principal, y pasa a serlo el realismo de los datos (sección 9) |
+| Significado de "duración" | Cuántas horas del día el sistema es capaz de suministrar la energía necesaria o, a la inversa, cuánto tiempo estará sin suministro | Coincide con la autonomía tal como se define en la sección 5. La salida más directa son las horas diarias con y sin suministro (sección 5.6) |
+| Horizonte | Horas, días, semanas y meses. El sistema debe admitir cualquiera de ellos, asumiendo que la exactitud disminuye al aumentar el horizonte | Ningún método cubre todos los horizontes. Hay que combinar pronósticos operativos a corto plazo con estimaciones climatológicas a largo plazo (secciones 3.6 y 5.5) |
 
 ---
 
@@ -253,6 +263,17 @@ Con la estrategia directa, los retardos inferiores a $h$ no están disponibles p
 - **Convergencia hacia la climatología condicional.** A horizontes largos, la mejor predicción posible se aproxima al perfil medio para ese tipo de día, hora y temporada. La ventaja de cualquier modelo sobre la media estacional disminuye, y llega a anularse.
 
 En consecuencia, conviene evaluar los modelos por separado para cada paso del horizonte y comparar la curva de error con la de la media estacional. A partir del paso en que ambas curvas convergen, el modelo no aporta información, y en la simulación de la batería puede sustituirse por perfiles climatológicos con su dispersión histórica.
+
+**Horizontes de semanas y meses.** El encargo exige también estos horizontes (sección 1.1), que quedan fuera del alcance de los modelos horarios descritos. La tabla resume cómo cambia el planteamiento con el horizonte:
+
+| Horizonte | Resolución habitual | Información disponible | Forma de la respuesta |
+|---|---|---|---|
+| Horas a 2–3 días | Horaria | Retardos recientes y pronóstico meteorológico | Pronóstico horario con intervalos |
+| Hasta 10–15 días | Horaria o diaria | Ensemble meteorológico, cada vez más disperso, y calendario | Pronóstico con intervalos amplios |
+| Semanas | Diaria o semanal | Calendario, estacionalidad y climatología | Energía diaria o semanal con su distribución |
+| Meses | Semanal o mensual | Estacionalidad, tendencia y climatología | Perfil típico y estimación de riesgo (sección 5.5) |
+
+A partir de unas dos semanas, la predicción deja de referirse a horas concretas y pasa a describir el comportamiento típico del periodo. Kizilcec et al. [24] siguen este esquema: pronostican a 24 horas, a 7 días y la semana media de los tres meses siguientes, y obtienen su mejor resultado en este último caso, porque el promedio elimina la variabilidad horaria. La literatura revisada en este documento se concentra en el corto plazo; el pronóstico de demanda a medio y largo plazo no se ha revisado con la misma profundidad y queda como ampliación pendiente.
 
 ### 3.7 Efecto de la escala de agregación
 
@@ -528,6 +549,8 @@ Cuando no se dispone de ensembles, las alternativas son las mencionadas en la se
 
 En sistemas en los que la autonomía supera habitualmente el horizonte del pronóstico, el resultado deja de ser una predicción operativa y pasa a ser una estimación de riesgo estacional: por ejemplo, la probabilidad de sufrir al menos un agotamiento en el próximo mes.
 
+Lo mismo ocurre cuando se consulta al sistema por un horizonte de semanas o meses, como prevé el encargo (sección 1.1). En ese caso, la respuesta adecuada no es una fecha de agotamiento, sino magnitudes agregadas sobre los escenarios climatológicos: las horas diarias con suministro esperadas en el periodo, el número esperado de días con algún corte y la probabilidad de agotamiento (sección 5.6).
+
 ### 5.6 Formas de expresar la autonomía
 
 El ejemplo de la sección 5.4 muestra que una sola magnitud no describe adecuadamente la situación energética. Las salidas empleadas en la literatura, o que se derivan directamente de la simulación, son las siguientes:
@@ -538,6 +561,7 @@ El ejemplo de la sección 5.4 muestra que una sola magnitud no describe adecuada
 | Probabilidad de agotamiento | Fracción de escenarios en que se produce un agotamiento antes de un horizonte dado, por ejemplo 24 o 48 horas | Base para alertas y para la decisión de reducir cargas |
 | Energía no servida esperada | Media sobre los escenarios de la demanda no cubierta en el horizonte | Distingue episodios breves de cortes prolongados. Es la versión operativa de la LPSP (sección 5.1) |
 | Horas sin suministro | Duración total de los periodos con la batería agotada | Interpretación directa para el usuario |
+| Horas diarias con suministro | Número de horas de cada día del horizonte en que la demanda queda cubierta, con sus percentiles. Su complemento a 24 son las horas diarias sin suministro | Es la magnitud que el encargo denomina "duración" (sección 1.1). Está definida en cualquier horizonte: en el corto plazo se informa día a día y, en semanas o meses, como media diaria del periodo |
 | Estado de carga mínimo | Valor mínimo de $E$ en el horizonte, con sus percentiles | Indica el margen disponible cuando no se prevé agotamiento |
 | Consumo adicional admisible | Mayor demanda adicional constante que mantiene la probabilidad de agotamiento por debajo de un umbral | Se obtiene repitiendo la simulación con demanda incrementada. Convierte la estimación en una recomendación de uso |
 
@@ -684,6 +708,14 @@ Comparar con una referencia simulada, y no con el estado de carga medido, aísla
 | BuildingsBench | 900 000 edificios simulados y más de 1 900 reales [20] | Preentrenamiento y comparación |
 | Open-Meteo, NASA POWER | Datos meteorológicos históricos y pronosticados [54, 55] | Variables exógenas (sección 4.3) |
 
+**Uso de datos sintéticos.** Los datos de consumo del proyecto son por ahora sintéticos y de gran volumen (sección 1.1). Esto modifica varias conclusiones de la revisión:
+
+- **El volumen deja de limitar la elección de modelo.** La ventaja del *gradient boosting* con datos moderados (sección 3.4) pierde peso, y las arquitecturas neuronales y los modelos globales (sección 3.8) disponen de datos suficientes para entrenarse.
+- **Los resultados describen el generador, no el comportamiento real.** Un modelo puede aprender con facilidad las reglas con que se generaron los datos y obtener errores muy inferiores a los habituales en hogares reales (sección 3.7). Esos errores no son extrapolables a una instalación real. La tesis citada en [12c] es un precedente de comparación de modelos sobre datos sintéticos.
+- **Hay que comprobar qué fenómenos contiene la serie.** Conviene verificar si los datos reproducen los ciclos diario y semanal, la estacionalidad, la dependencia de la temperatura y la variabilidad entre días. La censura por batería agotada (sección 3.2) y la moderación del consumo con la batería baja (sección 5.8) solo aparecerán si el generador las simula.
+- **La meteorología debe ser coherente con el consumo.** Si los datos sintéticos no se generaron a partir de la meteorología del emplazamiento elegido, las variables meteorológicas no tendrán relación con la demanda, y el modelo no podrá aprovecharlas.
+- **Los conjuntos públicos reales sirven de contraste.** Repetir la evaluación sobre un conjunto real, como el de Ausgrid, indica cuánto de lo observado con los datos sintéticos se mantiene con datos medidos.
+
 ---
 
 ## 10. Contexto nacional
@@ -709,6 +741,9 @@ No se identificaron trabajos nacionales que integren el pronóstico de demanda c
 
 ## 11. Síntesis
 
+- El encargo precisa que los datos de consumo son por ahora sintéticos y de gran volumen, que la "duración" son las horas del día con suministro o sin él, y que el sistema debe responder a horizontes de horas, días, semanas y meses (sección 1.1).
+- Con datos sintéticos, el volumen no limita la elección de modelo, pero los errores obtenidos describen el generador de datos y deben contrastarse con un conjunto real.
+- Ningún método cubre todos los horizontes. Hasta unos días se usan pronósticos horarios con pronóstico meteorológico; en semanas y meses, estimaciones agregadas basadas en la estacionalidad y la climatología, con exactitud decreciente.
 - El problema se aborda habitualmente separando el pronóstico de demanda del de generación e integrándolos mediante un balance energético de la batería.
 - Para el pronóstico de demanda con datos de tamaño moderado, LightGBM con variables autorregresivas, de calendario y meteorológicas es una referencia sólida. TFT, N-BEATSx y los modelos fundacionales con covariables, como Chronos-2, son alternativas que conviene comparar.
 - En sistemas aislados, la distinción entre demanda y consumo servido es determinante para no subestimar la demanda. La generación medida está censurada de forma análoga cuando la batería está llena.

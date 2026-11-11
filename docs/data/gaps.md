@@ -10,10 +10,10 @@ Preprocessing gaps must be resolved before any model is trained.
 
 | # | Gap | Type | Magnitude |
 |---|---|---|---|
-| G1 | Battery absent from data | Simulation | Structural |
-| G2 | Censoring by battery depletion | Simulation | Structural |
+| G1 | Battery absent from data | Simulation (task 3) | Structural |
+| G2 | Censoring by battery depletion | Simulation (task 3) | Structural |
 | G3 | PV potential reference | Interpretation | Small |
-| G4 | Inverter self-consumption | Simulation | ~5–10 % of daily energy |
+| G4 | Inverter self-consumption | Simulation (task 3) | ~5–10 % of daily energy |
 | G5 | DST not encoded in Ausgrid | Preprocessing | 1 h offset, ~6 months/year |
 | G6 | `0:00` column belongs to next day | Preprocessing | 30 min shift if mishandled |
 | G7 | Date format differs per file | Preprocessing | Parsing error if ignored |
@@ -23,13 +23,21 @@ Preprocessing gaps must be resolved before any model is trained.
 | G11 | Demand–PV coherence in Monte Carlo | Methodology | Underestimates P(deficit) |
 | G12 | Single weather point for all customers | Assumption | Small at hourly scale |
 | G13 | Controlled load (`CL`) treatment | Preprocessing | 10–15 % demand if dropped |
+| G14 | 81 customer-days absent in 2012-2013 | Data | 0.07 % of that year |
 
 ## What is *not* a gap
 
-Verified during dataset selection: no missing values, no negative values, no
-`NA` rows, no outliers of concern, no censoring in the demand data
-(customers are grid-connected, demand is latent and fully observed). The
-dataset is unusually clean; the gaps below are about what it does not
+Verified during dataset selection, **at the cell level**: no missing values
+inside any row, no negative values, no `NA` rows in `Row Quality`, no
+outliers of concern, no censoring in the demand data (customers are
+grid-connected, demand is latent and fully observed).
+
+One exception at the **row level**: 81 `(customer, day)` pairs are entirely
+absent from the 2012-2013 file (see G14). This is not "missing values" within
+rows; it is whole rows that do not appear. It affects 0.07 % of that year
+and does not require imputation.
+
+The dataset is unusually clean. The gaps below are about what it does not
 contain, not about data quality.
 
 ---
@@ -38,9 +46,16 @@ contain, not about data quality.
 
 Ausgrid has no battery, SOC, charge/discharge power, DoD or round-trip
 efficiency. The battery is simulated from an initial SOC and capacity by
-integrating the energy balance with simulated demand and PV as inputs.
-Parameters (efficiencies, C-rate, DoD, capacity) are scenario parameters, not
-fitted to data, and are varied in the Monte Carlo.
+integrating the energy balance with **forecasted** demand (output of the
+demand model, task 2) and **forecasted** PV (output of pvlib, task 3) as
+inputs. Parameters (efficiencies, C-rate, DoD, capacity) are scenario
+parameters, not fitted to data, and are varied in the Monte Carlo.
+
+**Important:** this is a **modelling step (task 3), not data preparation for
+task 1.** Task 1 provides clean, verified data; the battery simulation
+requires the forecasts from tasks 2 and 3, which do not yet exist. The gap is
+documented here so that the assumption is not lost, but it is **not computed
+in task 1**.
 
 **Magnitude:** structural — without a simulated battery there is no autonomy
 estimate. Sensitivity to battery parameters should be reported as a range.
@@ -51,9 +66,9 @@ In a real isolated system, when the battery reaches its lower limit the load
 is disconnected and recorded consumption drops to zero while demand
 continues. Ausgrid does not have this. In the training data there is nothing
 to do: the demand is latent and complete, which is a strength of the dataset.
-In the isolated-system simulation, censoring is injected naturally by the
-battery model: when `E` reaches `E_min`, demand is counted as unserved until
-generation recovers.
+In the isolated-system simulation (task 3), censoring is injected naturally
+by the battery model: when `E` reaches `E_min`, demand is counted as
+unserved until generation recovers.
 
 **Magnitude:** structural. Note in the report that real isolated-system
 demand may also be suppressed by the user when the battery is low, which
@@ -113,16 +128,16 @@ handled.
 
 ## G8 — Non-tropical climate (NSW)
 
-Ausgrid covers a temperate climate; the project context is tropical. The
-demand model's performance in tropical conditions is unknown and not claimed.
-The PV + battery simulation framework is transferable, but the autonomy
-numbers are specific to NSW. If tropical validation is required, the only
-honest path is a real tropical dataset; generating a synthetic tropical
-dataset from Ausgrid would be an extrapolation of a temperate-trained model
-with no ground truth.
+Ausgrid covers a temperate climate. The project brief is climate-agnostic
+("PV capacity + weather data → how long it lasts"), but the team context
+mentions Cuba as the intended deployment. The demand model's performance in
+tropical conditions is unknown and not claimed. The PV + battery simulation
+framework is transferable; the autonomy numbers are specific to NSW.
 
 **Magnitude:** qualitative — affects external validity, not internal
-validity. Documented in the final report.
+validity. Documented in the final report. No additional dataset is required
+by the brief; if tropical validation is later requested, the only honest
+path is a real tropical dataset, not a synthetic one derived from Ausgrid.
 
 ## G9 — No historical weather forecast for 2010–2013
 
@@ -192,18 +207,51 @@ temporal pattern. Two options:
 **Magnitude:** if `CL` is dropped, demand is underestimated by 10–15 % on
 affected days, propagating directly to autonomy.
 
+## G14 — 81 customer-days absent in 2012-2013
+
+The 2012-2013 file contains 109,419 `GC` rows and 109,419 `GG` rows, versus
+the expected 109,500 (= 300 customers × 365 days). The 2010-2011 and
+2011-2012 files have exactly the expected counts (109,500 and 109,800
+respectively, the latter because 2012 is a leap year). This means **81
+`(customer, day)` pairs are entirely absent** from the 2012-2013 file: no
+`GC` row, no `GG` row, and consequently no `CL` row for those pairs either.
+
+This is not "missing values" inside a row (which is zero everywhere); it is
+whole rows that do not appear in the file.
+
+**How it is handled.** **Discard** those pairs, do not impute them. 81 out
+of 109,500 is 0.07 % of the year; imputing them would fabricate data with no
+justification and would bias any metric computed on the affected customer-
+days. When reshaping wide-to-long, those pairs simply do not generate rows;
+the model must tolerate the resulting gaps in the per-customer time series
+(e.g. when computing lags, skip missing timestamps rather than propagate).
+
+**Magnitude:** 0.07 % of one year in one file. No material effect on model
+training or on autonomy estimation. Must be documented so that whoever
+reshapes the data does not mistake the absence for a parsing bug.
+
+**Interaction with other gaps:** G14 does not interact with G5 (DST) or G6
+(`0:00`); it is an independent missingness at the row level. It is listed
+last because it was discovered after the main verification.
+
 ---
 
 ## Cross-cutting notes
 
-- **DST reconstruction (G5)** is the single most likely source of subtle
+- **G5 (DST reconstruction)** is the single most likely source of subtle
   bugs. Test it on both transition days before any model uses the reshaped
   data; a regression test asserting the expected number of half-hours per
   year is recommended.
-- **`0:00` re-stamping (G6)** and **DST (G5)** interact: re-stamping must
+- **G6 (`0:00` re-stamping)** and **G5 (DST)** interact: re-stamping must
   happen before the UTC conversion, otherwise the day boundary is off by
   30 min twice a year.
-- **`CL` inclusion (G13)** must be decided before the EDA, otherwise the
+- **G13 (`CL` inclusion)** must be decided before the EDA, otherwise the
   baseline is computed on the wrong demand series.
-- The demand series is latent and complete; **no imputation is needed** at
-  any point.
+- **G14 (81 absent customer-days)** must be handled at reshape time, not at
+  imputation time. Do not fill them.
+- **G1–G4 are task-3 modelling steps**, not task-1 data preparation. Task 1
+  ends with clean, verified data; the battery simulation starts once demand
+  and PV forecasts exist.
+- The demand series is latent and complete at the cell level; **no
+  imputation is needed** at any point. G14 is a whole-row absence, not a
+  missing value.

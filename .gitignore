@@ -4,6 +4,9 @@ data/raw/*
 !data/raw/.gitkeep
 data/weather/*
 !data/weather/.gitkeep
+# Datasets generados por src/preprocessing; se recrean con los scripts.
+data/processed/*
+!data/processed/.gitkeep
 
 # ── Python ────────────────────────────────────────────────────────────
 __pycache__/

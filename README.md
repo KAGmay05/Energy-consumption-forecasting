@@ -65,5 +65,6 @@ El proceso completo tarda alrededor de un minuto. **El archivo que se usa para l
 | `notebooks/weather_exploration.ipynb` | Revisión de ERA5 y justificación de los cambios de `weather.py` |
 | `notebooks/ausgrid_exploration.ipynb` | Revisión de Ausgrid y justificación de los cambios de `ausgrid.py` |
 | `notebooks/final_dataset.ipynb` | Descripción del conjunto final: filas, columnas, marcas de calidad y notas de uso |
+| `notebooks/forecasting_eda.ipynb` | Análisis exploratorio para el pronóstico de la demanda (solo 2010-2011 y 2011-2012; 2012-2013 se reserva para el test): calendario, distribución del consumo, diferencias entre hogares, estacionalidades, dependencia temporal y relación con el clima |
 
 `docs/data/` contiene el origen de cada archivo (`MANIFEST.md`) y las limitaciones conocidas de los datos (`gaps.md`).

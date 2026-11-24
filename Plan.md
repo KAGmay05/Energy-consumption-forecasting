@@ -10,7 +10,7 @@ El sistema consta de tres componentes: un pronóstico de consumo, un pronóstico
 
 | Modelo | Papel |
 |---|---|
-| Persistencia estacional y media estacional | Referencias mínimas con las que se compara todo lo demás |
+| Persistencia estacional (24 horas) y media estacional (misma hora de los 7 días anteriores) | Referencias mínimas con las que se compara todo lo demás |
 | LightGBM | Modelo principal. Usa retardos del consumo, variables de calendario y temperatura y humedad pronosticadas |
 | LSTM | Red recurrente, la familia más usada en los trabajos de referencia |
 | TFT (Temporal Fusion Transformer) | Admite el pronóstico meteorológico como entrada futura y produce cuantiles |
@@ -30,7 +30,7 @@ Modelo físico con pvlib, que calcula la generación a partir de la capacidad in
 ## 4. Incertidumbre y evaluación
 
 - **Incertidumbre del consumo.** Regresión cuantílica con LightGBM, calibrada con predicción conformal (CQR).
-- **Evaluación.** Validación temporal con origen móvil. Los modelos de consumo se comparan con MAE, MASE y sesgo, y la cadena completa, por el error en horas de suministro en cada horizonte.
+- **Evaluación.** Validación temporal con origen móvil: un origen cada día a las 00:00 hora local y un horizonte de 14 días. Los modelos se ajustan y se eligen con 2011-2012 como validación; 2012-2013 es el test y se usa una sola vez por modelo. Los modelos de consumo se comparan en cada paso del horizonte con el MASE (escalado con la persistencia de 24 horas), el MAE, el sesgo y el error de la energía diaria, y la cadena completa, por el error en horas de suministro. Los detalles están en [decisiones de modelado](docs/modelado/decisiones.md).
 
 ## 5. Orden de implementación
 

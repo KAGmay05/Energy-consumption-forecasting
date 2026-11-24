@@ -7,6 +7,8 @@ data/weather/*
 # Datasets generados por src/preprocessing; se recrean con los scripts.
 data/processed/*
 !data/processed/.gitkeep
+# Tablas de métricas que genera la evaluación; se recrean con los scripts.
+data/results/
 
 # ── Python ────────────────────────────────────────────────────────────
 __pycache__/

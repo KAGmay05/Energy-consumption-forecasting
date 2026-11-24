@@ -1,67 +1,55 @@
-## Candidate 1 — Ausgrid Solar Home Electricity Data
+# Inventario de conjuntos de datos candidatos
 
-| Field | Value |
+## Candidato 1 — Ausgrid Solar Home Electricity Data
+
+| Campo | Valor |
 |---|---|
-| Institution | Ausgrid (NSW electricity distributor, Australia) |
-| Country | Australia (NSW) |
-| Period | 2010-07-01 to 2013-06-30 (3 years) |
-| Resolution | 30 min (48 half-hour columns per row) |
-| Number of installations | 300 |
-| Consumption available | yes — `GC` (general) + `CL` (controlled load, ~46% of customer-days) |
-| PV measured per installation | yes — `GG` (gross-metered generation, measured) |
-| PV installed capacity available | yes — `Generator Capacity` in kWp (mean 1.67, median 1.50, range 1.0–9.99) |
-| Location available | yes — `Postcode` (100 unique postcodes, NSW) |
-| License | CC-BY 3.0 Australia (verified in mirror README, originally Ausgrid 2014) |
-| Access | open download from mirror (original Ausgrid page offline; metadata at data.gov.au) |
-| Format | CSV (wide: 5 descriptive + 48 half-hour cols + `Row Quality` in 2 of 3 files) |
-| Size | ~55 MB compressed; ~270k rows/file, ~808k rows total |
-| Official URL | original: ausgrid.com.au (offline). Metadata: https://data.gov.au/data/en/dataset/nsw-solar-home-electricty-data. Mirror: https://pierreh.eu/downloads/Ausgrid_solar_home_data.zip |
-| Consultation date | 2026-11-10 |
-| Notes / discrepancies | see below |
+| Institución | Ausgrid (distribuidora eléctrica de NSW, Australia) |
+| País | Australia (NSW) |
+| Periodo | 2010-07-01 a 2013-06-30 (3 años) |
+| Resolución | 30 min (48 columnas de media hora por fila) |
+| Número de instalaciones | 300 |
+| Consumo disponible | sí — `GC` (general) + `CL` (carga controlada, ~46 % de los días de cliente) |
+| FV medida por instalación | sí — `GG` (generación medida con contador bruto) |
+| Capacidad FV instalada disponible | sí — `Generator Capacity` en kWp (media 1,67, mediana 1,50, rango 1,0–9,99) |
+| Ubicación disponible | sí — `Postcode` (100 códigos postales distintos, NSW) |
+| Licencia | CC-BY 3.0 Australia (verificada en el README del espejo, originalmente Ausgrid 2014) |
+| Acceso | descarga abierta desde el espejo (la página original de Ausgrid ya no está en línea; metadatos en data.gov.au) |
+| Formato | CSV (ancho: 5 columnas descriptivas + 48 de media hora + `Row Quality` en 2 de los 3 archivos) |
+| Tamaño | ~55 MB comprimido; ~270 mil filas por archivo, ~808 mil filas en total |
+| URL oficial | original: ausgrid.com.au (fuera de línea). Metadatos: https://data.gov.au/data/en/dataset/nsw-solar-home-electricty-data. Espejo: https://pierreh.eu/downloads/Ausgrid_solar_home_data.zip |
+| Fecha de consulta | 2026-11-10 |
+| Notas / discrepancias | véase más abajo |
 
-### Verified facts
+### Hechos verificados
 
-- 300 customers, 365/366/365 days per customer per file, 48 half-hours per day
-  → 109,500–109,800 GC and GG rows per file, 49,719–50,735 CL rows per file.
-- Zero nulls, zero negatives in half-hour columns across all three files.
-- `Row Quality`: absent in 2010-11; present and all `BLANK` in 2011-12 and 2012-13.
-  → No `NA` rows to impute.
-- Half-hour values in kWh per 30 min, positive for both consumption and generation.
-  Range: 0.000 to ~7.8 kWh/30 min.
-- `Generator Capacity` consistent across files: mean 1.67 kWp.
+- 300 clientes, 365/366/365 días por cliente en cada archivo, 48 medias horas por día → 109.500–109.800 filas de GC y de GG por archivo, 49.719–50.735 filas de CL por archivo.
+- Cero nulos y cero negativos en las columnas de media hora de los tres archivos.
+- `Row Quality`: no existe en 2010-11; existe y vale siempre `BLANK` en 2011-12 y 2012-13. → No hay filas `NA` que imputar.
+- Valores de media hora en kWh por 30 min, positivos tanto en consumo como en generación. Rango: de 0,000 a ~7,8 kWh/30 min.
+- `Generator Capacity` es coherente entre archivos: media de 1,67 kWp.
 
-### Discrepancies vs official PDF
+### Discrepancias con el PDF oficial
 
-- CSV header is on **line 2 (index 1)**, preceded by a banner line. Must `skiprows=1`.
-- Column names in CSV differ from PDF:
-    PDF: `Customer | Postcode | Generator Capacity | Consumption | Date`
-    CSV: `Customer | Generator Capacity | Postcode | Consumption Category | date`
-- Date format differs **between files**:
-    2010-2011: `%d-%b-%y`  (e.g. `1-Jul-10`)
-    2011-2012: `%d/%m/%Y`  (e.g. `1/07/2011`)
-    2012-2013: `%d/%m/%Y`
-- Column `0:00` corresponds to interval **23:30–0:00 of the next day** (Ausgrid quirk).
-  Must be re-stamped as `date + 1 day, 00:00` during reshape.
-- **DST is not encoded**: all 48 half-hour columns have identical non-null counts
-  (270,304), and DST transition days (2 Oct 2011, 1 Apr 2012) have 48 non-null
-  values, not 46/50. The dataset treats every day as 24 nominal hours.
+- La cabecera del CSV está en la **línea 2 (índice 1)**, precedida por una línea de título. Hay que usar `skiprows=1`.
+- Los nombres de las columnas del CSV no coinciden con los del PDF:
+  - PDF: `Customer | Postcode | Generator Capacity | Consumption | Date`
+  - CSV: `Customer | Generator Capacity | Postcode | Consumption Category | date`
+- El formato de fecha cambia **entre archivos**:
+  - 2010-2011: `%d-%b-%y` (p. ej. `1-Jul-10`)
+  - 2011-2012: `%d/%m/%Y` (p. ej. `1/07/2011`)
+  - 2012-2013: `%d/%m/%Y`
+- La columna `0:00` corresponde al intervalo de **23:30 a 0:00 del día siguiente** (peculiaridad de Ausgrid). Al pasar de formato ancho a largo hay que asignarle la marca `fecha + 1 día, 00:00`.
+- **El horario de verano no está codificado**: las 48 columnas de media hora tienen el mismo número de valores no nulos (270.304), y los días de cambio de horario (2 de octubre de 2011 y 1 de abril de 2012) tienen 48 valores no nulos, no 46/50. El conjunto trata todos los días como de 24 horas nominales.
 
-### Implications for the project
+### Implicaciones para el proyecto
 
-- **Latent demand**: grid-connected customers → no battery-depletion censoring.
-  Advantage for demand modelling; censoring is injected when simulating isolated system.
-- **PV potential**: gross-metered `GG` measures total generation with no
-  curtailment from a full battery → approximates PV potential well.
-- **Climate**: single climate zone (temperate NSW). Does not validate the
-  tropical context mentioned in the project. Documented limitation.
-- **No historical forecast for 2010–2013** in Open-Meteo (starts ~2022).
-  Full-chain backtesting will use ERA5 as "perfect forecast" or with
-  calibrated perturbation. See `gaps.md`.
-- **DST reconstruction required** before joining with UTC-based weather
-  and running pvlib. See `gaps.md`.
+- **Demanda latente**: clientes conectados a la red → no hay censura por agotamiento de la batería. Es una ventaja para modelar la demanda; la censura se introduce al simular el sistema aislado.
+- **Potencial FV**: `GG`, medida con contador bruto, recoge la generación total sin recorte por batería llena → se aproxima bien al potencial FV.
+- **Clima**: una sola zona climática (NSW, templada). No valida el contexto tropical que se menciona en el proyecto. Es una limitación documentada.
+- **No hay pronóstico histórico de 2010–2013** en Open-Meteo (empieza en ~2022). La evaluación retrospectiva (*backtesting*) de la cadena completa usará ERA5 como «pronóstico perfecto» o con una perturbación calibrada. Véase `gaps.md`.
+- **Hace falta reconstruir el horario de verano** antes de unir con el clima, que está en UTC, y de ejecutar pvlib. Véase `gaps.md`.
 
-### Sample sanity check (Customer 1, Postcode 2076, 3.78 kWp)
+### Comprobación de una muestra (cliente 1, código postal 2076, 3,78 kWp)
 
-- 1 Jul 2010: GC profile typical of winter residential (evening peak),
-  GG zero until ~13:00, peak ~1.18 kWh/30 min around midday.
-  Consistent with a north-facing 3.78 kWp system in Sydney winter.
+- 1 de julio de 2010: perfil de GC típico de un hogar en invierno (pico por la tarde), GG nula hasta ~13:00, pico de ~1,18 kWh/30 min hacia el mediodía. Coherente con un sistema de 3,78 kWp orientado al norte en el invierno de Sídney.

@@ -1,257 +1,142 @@
-# Gaps in the data and how they are handled — task 1
+# Carencias de los datos y cómo se tratan — tarea 1
 
-Differences between what the project needs and what the selected datasets
-provide. Each gap states what is missing, how it is handled, and the expected
-magnitude. Structural gaps are inherent to the problem (the data will never
-contain a battery). Limitation gaps are documented and accepted.
-Preprocessing gaps must be resolved before any model is trained.
+Diferencias entre lo que necesita el proyecto y lo que ofrecen los conjuntos de datos elegidos. De cada carencia se indica qué falta, cómo se trata y qué magnitud se espera. Las carencias estructurales son propias del problema (los datos nunca van a contener una batería). Las limitaciones están documentadas y se aceptan. Las carencias de preprocesamiento deben resolverse antes de entrenar cualquier modelo.
 
-## Summary
+## Resumen
 
-| # | Gap | Type | Magnitude |
+| # | Carencia | Tipo | Magnitud |
 |---|---|---|---|
-| G1 | Battery absent from data | Simulation (task 3) | Structural |
-| G2 | Censoring by battery depletion | Simulation (task 3) | Structural |
-| G3 | PV potential reference | Interpretation | Small |
-| G4 | Inverter self-consumption | Simulation (task 3) | ~5–10 % of daily energy |
-| G5 | DST not encoded in Ausgrid | Preprocessing | 1 h offset, ~6 months/year |
-| G6 | `0:00` column belongs to next day | Preprocessing | 30 min shift if mishandled |
-| G7 | Date format differs per file | Preprocessing | Parsing error if ignored |
-| G8 | Non-tropical climate (NSW) | Limitation | Qualitative |
-| G9 | No historical weather forecast for 2010–2013 | Methodology | Underestimates forecast error |
-| G10 | Week / month horizon scenarios | Methodology | Structural |
-| G11 | Demand–PV coherence in Monte Carlo | Methodology | Underestimates P(deficit) |
-| G12 | Single weather point for all customers | Assumption | Small at hourly scale |
-| G13 | Controlled load (`CL`) treatment | Preprocessing | 10–15 % demand if dropped |
-| G14 | 81 customer-days absent in 2012-2013 | Data | 0.07 % of that year |
+| G1 | Los datos no incluyen batería | Simulación (tarea 3) | Estructural |
+| G2 | Censura por agotamiento de la batería | Simulación (tarea 3) | Estructural |
+| G3 | Referencia del potencial FV | Interpretación | Pequeña |
+| G4 | Consumo propio del inversor | Simulación (tarea 3) | ~5–10 % de la energía diaria |
+| G5 | Ausgrid no codifica el horario de verano | Preprocesamiento | Desfase de 1 h, ~6 meses al año |
+| G6 | La columna `0:00` pertenece al día siguiente | Preprocesamiento | Desplazamiento de 30 min si se trata mal |
+| G7 | El formato de fecha cambia según el archivo | Preprocesamiento | Error de lectura si se ignora |
+| G8 | Clima no tropical (NSW) | Limitación | Cualitativa |
+| G9 | No hay pronóstico meteorológico histórico de 2010–2013 | Metodología | Subestima el error del pronóstico |
+| G10 | Escenarios para horizontes de semanas y meses | Metodología | Estructural |
+| G11 | Coherencia entre demanda y FV en Monte Carlo | Metodología | Subestima P(déficit) |
+| G12 | Un solo punto meteorológico para todos los clientes | Supuesto | Pequeña a escala horaria |
+| G13 | Tratamiento de la carga controlada (`CL`) | Preprocesamiento | 10–15 % de la demanda si se descarta |
+| G14 | 81 días de cliente ausentes en 2012-2013 | Datos | 0,07 % de ese año |
 
-## What is *not* a gap
+## Lo que *no* es una carencia
 
-Verified during dataset selection, **at the cell level**: no missing values
-inside any row, no negative values, no `NA` rows in `Row Quality`, no
-outliers of concern, no censoring in the demand data (customers are
-grid-connected, demand is latent and fully observed).
+Comprobado durante la selección de los datos, **a nivel de celda**: no hay valores ausentes dentro de ninguna fila, ni valores negativos, ni filas `NA` en `Row Quality`, ni valores atípicos preocupantes, ni censura en los datos de demanda (los clientes están conectados a la red, así que la demanda es latente y se observa completa).
 
-One exception at the **row level**: 81 `(customer, day)` pairs are entirely
-absent from the 2012-2013 file (see G14). This is not "missing values" within
-rows; it is whole rows that do not appear. It affects 0.07 % of that year
-and does not require imputation.
+Hay una excepción **a nivel de fila**: 81 pares `(cliente, día)` faltan por completo en el archivo de 2012-2013 (véase G14). No son «valores ausentes» dentro de las filas, sino filas enteras que no aparecen. Afecta al 0,07 % de ese año y no requiere imputación.
 
-The dataset is unusually clean. The gaps below are about what it does not
-contain, not about data quality.
+El conjunto de datos es inusualmente limpio. Las carencias siguientes se refieren a lo que no contiene, no a la calidad de los datos.
 
 ---
 
-## G1 — Battery absent from data
+## G1 — Los datos no incluyen batería
 
-Ausgrid has no battery, SOC, charge/discharge power, DoD or round-trip
-efficiency. The battery is simulated from an initial SOC and capacity by
-integrating the energy balance with **forecasted** demand (output of the
-demand model, task 2) and **forecasted** PV (output of pvlib, task 3) as
-inputs. Parameters (efficiencies, C-rate, DoD, capacity) are scenario
-parameters, not fitted to data, and are varied in the Monte Carlo.
+Ausgrid no tiene batería, estado de carga (SOC), potencia de carga y descarga, profundidad de descarga (DoD) ni eficiencia de ida y vuelta (*round-trip*). La batería se simula a partir de un SOC inicial y una capacidad, integrando el balance energético con la demanda **pronosticada** (salida del modelo de demanda, tarea 2) y la FV **pronosticada** (salida de pvlib, tarea 3) como entradas. Los parámetros (eficiencias, *C-rate*, DoD, capacidad) son parámetros de escenario, no se ajustan con los datos, y se varían en el Monte Carlo.
 
-**Important:** this is a **modelling step (task 3), not data preparation for
-task 1.** Task 1 provides clean, verified data; the battery simulation
-requires the forecasts from tasks 2 and 3, which do not yet exist. The gap is
-documented here so that the assumption is not lost, but it is **not computed
-in task 1**.
+**Importante:** esto es un **paso de modelado (tarea 3), no preparación de datos de la tarea 1.** La tarea 1 entrega datos limpios y verificados; la simulación de la batería necesita los pronósticos de las tareas 2 y 3, que todavía no existen. La carencia se documenta aquí para que el supuesto no se pierda, pero **no se calcula en la tarea 1**.
 
-**Magnitude:** structural — without a simulated battery there is no autonomy
-estimate. Sensitivity to battery parameters should be reported as a range.
+**Magnitud:** estructural — sin una batería simulada no hay estimación de la autonomía. La sensibilidad a los parámetros de la batería debe darse como un rango.
 
-## G2 — Censoring by battery depletion
+## G2 — Censura por agotamiento de la batería
 
-In a real isolated system, when the battery reaches its lower limit the load
-is disconnected and recorded consumption drops to zero while demand
-continues. Ausgrid does not have this. In the training data there is nothing
-to do: the demand is latent and complete, which is a strength of the dataset.
-In the isolated-system simulation (task 3), censoring is injected naturally
-by the battery model: when `E` reaches `E_min`, demand is counted as
-unserved until generation recovers.
+En un sistema aislado real, cuando la batería llega a su límite inferior, la carga se desconecta y el consumo registrado cae a cero aunque la demanda continúe. Esto no ocurre en Ausgrid. En los datos de entrenamiento no hay que hacer nada: la demanda es latente y completa, lo que es un punto fuerte del conjunto de datos. En la simulación del sistema aislado (tarea 3), la censura la introduce de forma natural el modelo de batería: cuando `E` llega a `E_min`, la demanda se cuenta como no servida hasta que se recupera la generación.
 
-**Magnitude:** structural. Note in the report that real isolated-system
-demand may also be suppressed by the user when the battery is low, which
-cannot be reproduced from grid data. Known limitation, not corrected.
+**Magnitud:** estructural. Debe indicarse en el informe que, en un sistema aislado real, el usuario también puede reducir la demanda cuando la batería está baja, algo que no se puede reproducir con datos de red. Es una limitación conocida y no se corrige.
 
-## G3 — PV potential reference
+## G3 — Referencia del potencial FV
 
-Ausgrid's `GG` (gross generation) is measured by a gross meter that records
-total PV output independently of load. Since the system is grid-connected and
-the excess is exported, there is no curtailment from a full battery, so `GG`
-is very close to potential generation. Use `GG` as the reference for
-validating pvlib on clear days. In the isolated-system simulation, use pvlib
-output as the PV input; the battery model decides how much is actually used.
+La `GG` (generación bruta) de Ausgrid se mide con un contador bruto que registra toda la producción FV con independencia de la carga. Como el sistema está conectado a la red y el excedente se exporta, no hay recorte por batería llena, así que `GG` está muy cerca de la generación potencial. `GG` se usa como referencia para validar pvlib en días despejados. En la simulación del sistema aislado, la entrada FV es la salida de pvlib; el modelo de batería decide cuánta se usa realmente.
 
-**Magnitude:** small (inverter clipping, soiling, measurement errors).
-Quantify on clear days.
+**Magnitud:** pequeña (recorte del inversor, suciedad, errores de medida). Debe cuantificarse en días despejados.
 
-## G4 — Inverter self-consumption
+## G4 — Consumo propio del inversor
 
-Real inverters consume 20–50 W continuously while on, drawn from the battery
-at night, not present in Ausgrid's load data. Add a constant inverter
-consumption (default 30 W) to simulated demand. Scenario parameter, varied in
-the Monte Carlo.
+Los inversores reales consumen 20–50 W de forma continua mientras están encendidos. Esa energía sale de la batería por la noche y no aparece en los datos de consumo de Ausgrid. Se añade a la demanda simulada un consumo constante del inversor (30 W por defecto). Es un parámetro de escenario que se varía en el Monte Carlo.
 
-**Magnitude:** 0.5–1.5 kWh/day, 5–15 % of a typical Ausgrid daily
-consumption. Material for daily autonomy; must be included.
+**Magnitud:** 0,5–1,5 kWh/día, un 5–15 % del consumo diario típico de Ausgrid. Es relevante para la autonomía diaria; debe incluirse.
 
-## G5 — DST not encoded in Ausgrid
+## G5 — Ausgrid no codifica el horario de verano
 
-Every day is encoded as 48 nominal half-hours regardless of the actual 46 or
-50 at DST transitions. Verified: all 48 columns have identical non-null
-counts, and transition days have 48 non-null values. Reconstruct UTC from
-date + `Australia/Sydney` rules. On the two transition days there is a 30-min
-ambiguity; recommended: drop the duplicated hour at DST end, interpolate the
-missing hour at DST start, and document the choice.
+Cada día está codificado como 48 medias horas nominales, sin importar las 46 o 50 que hay en realidad en los cambios de horario. Comprobado: las 48 columnas tienen el mismo número de valores no nulos, y los días de cambio tienen 48 valores no nulos. El UTC se reconstruye a partir de la fecha y las reglas de `Australia/Sydney`. En los dos días de cambio hay una ambigüedad de 30 min; se recomienda eliminar la hora duplicada al terminar el horario de verano, interpolar la hora que falta al empezar y documentar la decisión.
 
-**Magnitude:** if unhandled, 1 h systematic misalignment with ERA5 /
-Open-Meteo for ~6 months/year. Breaks pvlib solar position, lag features and
-the demand–weather join. Must be handled.
+**Magnitud:** si no se trata, hay un desfase sistemático de 1 h con ERA5 / Open-Meteo durante ~6 meses al año. Estropea la posición solar de pvlib, los retardos y la unión de la demanda con el clima. Debe tratarse.
 
-## G6 — `0:00` column belongs to the next day
+## G6 — La columna `0:00` pertenece al día siguiente
 
-The last half-hour column (`0:00`) represents 23:30–0:00 of the next day, not
-of the same day. During reshape, re-stamp it as `date + 1 day, 00:00 local`.
+La última columna de media hora (`0:00`) representa el intervalo de 23:30 a 0:00 del día siguiente, no del mismo día. Al pasar de formato ancho a largo hay que asignarle la marca `fecha + 1 día, 00:00 hora local`.
 
-**Magnitude:** if mishandled, 30-min gap and 30-min overlap at every day
-boundary. Breaks hour aggregation, lags and resampling. Must be handled.
+**Magnitud:** si se trata mal, queda un hueco de 30 min y un solapamiento de 30 min en cada cambio de día. Estropea la agregación por horas, los retardos y el remuestreo. Debe tratarse.
 
-## G7 — Date format differs per file
+## G7 — El formato de fecha cambia según el archivo
 
-`ausgrid_2010_2011.csv` uses `%d-%b-%y`; the other two use `%d/%m/%Y`. Parse
-each file with its own format, or use `errors='coerce'` and assert zero NaT.
-Do not assume a single parser.
+`ausgrid_2010_2011.csv` usa `%d-%b-%y`; los otros dos usan `%d/%m/%Y`. Cada archivo debe leerse con su propio formato, o bien usar `errors='coerce'` y comprobar que no queda ningún NaT. No debe suponerse que un mismo formato sirve para todos.
 
-**Magnitude:** if mishandled, 100 % NaT for two of the three files. Must be
-handled.
+**Magnitud:** si se trata mal, 100 % de NaT en dos de los tres archivos. Debe tratarse.
 
-## G8 — Non-tropical climate (NSW)
+## G8 — Clima no tropical (NSW)
 
-Ausgrid covers a temperate climate. The project brief is climate-agnostic
-("PV capacity + weather data → how long it lasts"), but the team context
-mentions Cuba as the intended deployment. The demand model's performance in
-tropical conditions is unknown and not claimed. The PV + battery simulation
-framework is transferable; the autonomy numbers are specific to NSW.
+Ausgrid cubre un clima templado. El encargo del proyecto no depende del clima («capacidad FV + datos meteorológicos → cuánto dura»), pero el contexto del equipo menciona Cuba como lugar de despliegue previsto. El rendimiento del modelo de demanda en condiciones tropicales se desconoce y no se afirma nada sobre él. El marco de simulación FV + batería es transferible; las cifras de autonomía son específicas de NSW.
 
-**Magnitude:** qualitative — affects external validity, not internal
-validity. Documented in the final report. No additional dataset is required
-by the brief; if tropical validation is later requested, the only honest
-path is a real tropical dataset, not a synthetic one derived from Ausgrid.
+**Magnitud:** cualitativa — afecta a la validez externa, no a la interna. Se documenta en el informe final. El encargo no exige otro conjunto de datos; si más adelante se pide una validación tropical, la única vía honesta es un conjunto tropical real, no uno sintético derivado de Ausgrid.
 
-## G9 — No historical weather forecast for 2010–2013
+## G9 — No hay pronóstico meteorológico histórico de 2010–2013
 
-Open-Meteo's Historical Forecast API starts ~2022; for the Ausgrid period
-only ERA5 (reanalysis) is available. Options, in order of preference:
+La Historical Forecast API de Open-Meteo empieza en ~2022; para el periodo de Ausgrid solo está disponible ERA5 (reanálisis). Opciones, por orden de preferencia:
 
-1. **ERA5 as "perfect forecast".** Simplest; reported autonomy error is a
-   **lower bound** on the real error.
-2. **ERA5 + calibrated perturbation.** Perturbation distribution matched to
-   typical 24–72 h operational forecast error. More realistic.
-3. **Report both** (1) and (2); difference quantifies how much of the
-   autonomy error is due to forecast imperfection. Recommended.
+1. **ERA5 como «pronóstico perfecto».** La más simple; el error de autonomía que se obtiene es una **cota inferior** del error real.
+2. **ERA5 + perturbación calibrada.** La distribución de la perturbación se ajusta al error típico de un pronóstico operativo a 24–72 h. Más realista.
+3. **Dar las dos**, (1) y (2); la diferencia cuantifica qué parte del error de autonomía se debe a la imperfección del pronóstico. Recomendada.
 
-**Magnitude:** the "perfect forecast" backtest underestimates the real error.
+**Magnitud:** la evaluación retrospectiva (*backtest*) con «pronóstico perfecto» subestima el error real.
 
-## G10 — Week / month horizon scenarios
+## G10 — Escenarios para horizontes de semanas y meses
 
-Forecasts do not extend beyond ~15 days with useful skill; for longer
-horizons only climatology is available. Generate scenarios from climatology
-(analog days in multi-day blocks, or Markov chains of day types by clearness
-index). The answer for these horizons is an aggregate (expected daily hours
-of supply, expected days with any cut, probability of at least one depletion),
-not a forecast of specific hours.
+Los pronósticos no tienen capacidad predictiva útil más allá de ~15 días; para horizontes más largos solo se dispone de la climatología. Los escenarios se generan a partir de la climatología (días análogos en bloques de varios días, o cadenas de Markov de tipos de día según el índice de claridad). La respuesta para estos horizontes es un agregado (horas diarias de suministro esperadas, días esperados con algún corte, probabilidad de al menos un agotamiento), no un pronóstico de horas concretas.
 
-**Magnitude:** structural — the answer changes in kind, not only in
-precision.
+**Magnitud:** estructural — la respuesta cambia de naturaleza, no solo de precisión.
 
-## G11 — Demand–PV coherence in Monte Carlo
+## G11 — Coherencia entre demanda y FV en Monte Carlo
 
-Independent sampling of demand and PV breaks their correlation, mixing
-clear-sky PV with cloudy-day demand and distorting deficit probabilities. Two
-mechanisms: (i) Open-Meteo ensemble members for horizons ≤ 15 days, each
-giving a coherent trajectory of temperature, irradiance, cloud cover and wind
-fed to both the demand model and pvlib; (ii) block bootstrap of demand
-residuals in 24 h blocks, not hour by hour, to preserve autocorrelation.
-Sampling residuals hour by hour makes them compensate within each night and
-underestimates the dispersion of autonomy.
+Muestrear la demanda y la FV de forma independiente rompe su correlación: mezcla FV de cielo despejado con demanda de día nublado y distorsiona las probabilidades de déficit. Dos mecanismos: (i) los miembros del ensemble de Open-Meteo para horizontes ≤ 15 días, cada uno con una trayectoria coherente de temperatura, irradiancia, nubosidad y viento que alimenta tanto al modelo de demanda como a pvlib; (ii) bootstrap por bloques de los residuos de la demanda, en bloques de 24 h y no hora a hora, para conservar la autocorrelación. Si los residuos se muestrean hora a hora, se compensan dentro de cada noche y se subestima la dispersión de la autonomía.
 
-**Magnitude:** if unhandled, probability of prolonged deficit is
-underestimated. Block bootstrap is the minimum acceptable treatment.
+**Magnitud:** si no se trata, se subestima la probabilidad de un déficit prolongado. El bootstrap por bloques es el tratamiento mínimo aceptable.
 
-## G12 — Single weather point for all customers
+## G12 — Un solo punto meteorológico para todos los clientes
 
-All 300 customers share one ERA5 grid point (Sydney CBD). The postcodes span
-~150 km, which at ERA5 resolution covers a few cells. Accepted as an
-assumption: at hourly resolution, variation between nearby NSW locations is
-small compared with day-to-day variation at any one location. Per-postcode
-weather would multiply data by ~100 without a clear gain. Revisit if
-per-postcode simulation is needed.
+Los 300 clientes comparten un mismo punto de la malla de ERA5 (centro de Sídney, *Sydney CBD*). Los códigos postales abarcan ~150 km, que a la resolución de ERA5 son unas pocas celdas. Se acepta como supuesto: a resolución horaria, la variación entre lugares cercanos de NSW es pequeña comparada con la variación de un día a otro en un mismo lugar. Usar el clima de cada código postal multiplicaría los datos por ~100 sin una mejora clara. Se revisará si hace falta simular por código postal.
 
-**Magnitude:** small, much smaller than the error from the missing
-operational forecast (G9) or the missing battery parameters (G1).
+**Magnitud:** pequeña, mucho menor que el error debido a la falta del pronóstico operativo (G9) o de los parámetros de la batería (G1).
 
-## G13 — Controlled load (`CL`) treatment
+## G13 — Tratamiento de la carga controlada (`CL`)
 
-Ausgrid has three categories: `GC` (general consumption), `CL` (controlled
-load, off-peak water heating, ~46 % of customer-days), `GG` (gross
-generation). `CL` is real demand on a separate meter with a distinct
-temporal pattern. Two options:
+Ausgrid tiene tres categorías: `GC` (consumo general), `CL` (carga controlada, calentamiento de agua en horario valle, ~46 % de los días de cliente) y `GG` (generación bruta). `CL` es demanda real medida con un contador aparte y con un patrón temporal propio. Dos opciones:
 
-1. **Include `CL` in total demand** (`GC + CL`). Recommended: total
-   consumption is what an isolated system must cover.
-2. **Model `GC` and `CL` separately.** More accurate but doubles the
-   modelling work. Revisit in task 2 if the EDA shows a very distinct and
-   predictable `CL` pattern.
+1. **Incluir `CL` en la demanda total** (`GC + CL`). Recomendada: el consumo total es lo que debe cubrir un sistema aislado.
+2. **Modelar `GC` y `CL` por separado.** Más preciso, pero duplica el trabajo de modelado. Se retomará en la tarea 2 si el EDA muestra un patrón de `CL` muy diferenciado y predecible.
 
-**Magnitude:** if `CL` is dropped, demand is underestimated by 10–15 % on
-affected days, propagating directly to autonomy.
+**Magnitud:** si se descarta `CL`, la demanda se subestima un 10–15 % en los días afectados, y ese error se propaga directamente a la autonomía.
 
-## G14 — 81 customer-days absent in 2012-2013
+## G14 — 81 días de cliente ausentes en 2012-2013
 
-The 2012-2013 file contains 109,419 `GC` rows and 109,419 `GG` rows, versus
-the expected 109,500 (= 300 customers × 365 days). The 2010-2011 and
-2011-2012 files have exactly the expected counts (109,500 and 109,800
-respectively, the latter because 2012 is a leap year). This means **81
-`(customer, day)` pairs are entirely absent** from the 2012-2013 file: no
-`GC` row, no `GG` row, and consequently no `CL` row for those pairs either.
+El archivo de 2012-2013 contiene 109.419 filas de `GC` y 109.419 filas de `GG`, frente a las 109.500 esperadas (= 300 clientes × 365 días). Los archivos de 2010-2011 y 2011-2012 tienen exactamente las filas esperadas (109.500 y 109.800 respectivamente; el segundo tiene más porque 2012 es bisiesto). Esto significa que **81 pares `(cliente, día)` faltan por completo** en el archivo de 2012-2013: no hay fila de `GC` ni fila de `GG` y, por tanto, tampoco fila de `CL` para esos pares.
 
-This is not "missing values" inside a row (which is zero everywhere); it is
-whole rows that do not appear in the file.
+No son «valores ausentes» dentro de una fila (de esos no hay ninguno en todo el conjunto); son filas enteras que no aparecen en el archivo.
 
-**How it is handled.** **Discard** those pairs, do not impute them. 81 out
-of 109,500 is 0.07 % of the year; imputing them would fabricate data with no
-justification and would bias any metric computed on the affected customer-
-days. When reshaping wide-to-long, those pairs simply do not generate rows;
-the model must tolerate the resulting gaps in the per-customer time series
-(e.g. when computing lags, skip missing timestamps rather than propagate).
+**Cómo se trata.** Esos pares se **descartan**, no se imputan. 81 de 109.500 es el 0,07 % del año; imputarlos sería inventar datos sin justificación y sesgaría cualquier métrica calculada sobre los días de cliente afectados. Al pasar de formato ancho a largo, esos pares simplemente no generan filas; el modelo debe tolerar los huecos que quedan en la serie temporal de cada cliente (por ejemplo, al calcular los retardos, saltarse las marcas de tiempo ausentes en lugar de propagar valores).
 
-**Magnitude:** 0.07 % of one year in one file. No material effect on model
-training or on autonomy estimation. Must be documented so that whoever
-reshapes the data does not mistake the absence for a parsing bug.
+**Magnitud:** 0,07 % de un año en un archivo. Sin efecto apreciable en el entrenamiento del modelo ni en la estimación de la autonomía. Debe documentarse para que quien transforme los datos no confunda la ausencia con un error de lectura.
 
-**Interaction with other gaps:** G14 does not interact with G5 (DST) or G6
-(`0:00`); it is an independent missingness at the row level. It is listed
-last because it was discovered after the main verification.
+**Interacción con otras carencias:** G14 no interactúa con G5 (horario de verano) ni con G6 (`0:00`); es una ausencia independiente, a nivel de fila. Aparece al final porque se descubrió después de la verificación principal.
 
 ---
 
-## Cross-cutting notes
+## Notas transversales
 
-- **G5 (DST reconstruction)** is the single most likely source of subtle
-  bugs. Test it on both transition days before any model uses the reshaped
-  data; a regression test asserting the expected number of half-hours per
-  year is recommended.
-- **G6 (`0:00` re-stamping)** and **G5 (DST)** interact: re-stamping must
-  happen before the UTC conversion, otherwise the day boundary is off by
-  30 min twice a year.
-- **G13 (`CL` inclusion)** must be decided before the EDA, otherwise the
-  baseline is computed on the wrong demand series.
-- **G14 (81 absent customer-days)** must be handled at reshape time, not at
-  imputation time. Do not fill them.
-- **G1–G4 are task-3 modelling steps**, not task-1 data preparation. Task 1
-  ends with clean, verified data; the battery simulation starts once demand
-  and PV forecasts exist.
-- The demand series is latent and complete at the cell level; **no
-  imputation is needed** at any point. G14 is a whole-row absence, not a
-  missing value.
+- **G5 (reconstrucción del horario de verano)** es, con diferencia, la fuente más probable de errores sutiles. Debe probarse en los dos días de cambio antes de que ningún modelo use los datos transformados; se recomienda un test de regresión que compruebe el número esperado de medias horas por año.
+- **G6 (nueva marca de `0:00`)** y **G5 (horario de verano)** interactúan: la nueva marca debe asignarse antes de la conversión a UTC; si no, el límite del día queda desplazado 30 min dos veces al año.
+- **G13 (inclusión de `CL`)** debe decidirse antes del EDA; si no, la referencia (*baseline*) se calcula sobre la serie de demanda equivocada.
+- **G14 (81 días de cliente ausentes)** debe tratarse al pasar de formato ancho a largo, no al imputar. No deben rellenarse.
+- **G1–G4 son pasos de modelado de la tarea 3**, no preparación de datos de la tarea 1. La tarea 1 termina con datos limpios y verificados; la simulación de la batería empieza cuando existen los pronósticos de demanda y de FV.
+- La serie de demanda es latente y completa a nivel de celda; **no hace falta imputar** en ningún momento. G14 es una ausencia de filas enteras, no un valor ausente.

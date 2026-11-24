@@ -10,3 +10,6 @@ retry-requests>=2.0
 # Exploratory analysis notebooks (plots and NSW public holidays)
 matplotlib>=3.8
 holidays>=0.50
+
+# Tests
+pytest>=8.0
